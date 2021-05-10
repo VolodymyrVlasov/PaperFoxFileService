@@ -29,7 +29,6 @@ public class FileUploadController {
             logger.info(file.getName());
             String filePath = fileUploadService.uploadFile(file);
             formData.add("filePath", filePath);
-//            formData.add("preview", fileUploadService.getPreviewSt().getFilename());
         } catch (IOException e) {
             e.printStackTrace();
         }
