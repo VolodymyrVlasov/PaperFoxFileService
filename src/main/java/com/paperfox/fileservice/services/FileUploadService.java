@@ -1,5 +1,7 @@
 package com.paperfox.fileservice.services;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -46,7 +48,12 @@ public class FileUploadService implements IFileUploadService {
                 Resource resourceThumb = new UrlResource(fileSavePath.toUri());
                 if (!resourceThumb.exists() || !resourceThumb.isReadable()) {
                     File file = new File(fileSavePath.toString());
-                    ImageIO.write(resizeImage(fileName), "JPG", file);
+                    String[] temp = fileName.split("\\.");
+                    if (temp[temp.length - 1].toLowerCase().equals("pdf")) {
+                        ImageIO.write(renderPDF(fileName), "JPG", file);
+                    } else {
+                        ImageIO.write(resizeImage(fileName), "JPG", file);
+                    }
                     return resourceThumb;
                 }
                 return resourceThumb;
@@ -58,7 +65,23 @@ public class FileUploadService implements IFileUploadService {
         }
     }
 
+    public BufferedImage renderPDF(String fileName) throws IOException {
+        Path filePath = Paths.get(temporaryPath + fileName);
+        File originalFile = new File(filePath.toString());
+        if (originalFile.exists()) {
+            PDDocument doc = new PDDocument();
+            try {
+                PDFRenderer pr = new PDFRenderer(PDDocument.load(originalFile));
+                return pr.renderImageWithDPI(0, 300);
 
+            } finally {
+                if (doc != null) {
+                    doc.close();
+                }
+            }
+        }
+        throw new IOException("File doesn't exist");
+    }
 
     public BufferedImage resizeImage(String fileName) throws IOException {
         Path filePath = Paths.get(temporaryPath + fileName);
@@ -67,7 +90,6 @@ public class FileUploadService implements IFileUploadService {
         BufferedImage outputImage;
         double width = previewImage.getWidth();
         double height = previewImage.getHeight();
-
 
         if (width >= height) {
             double coefficient = width / height;
