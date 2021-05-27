@@ -6,8 +6,11 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,6 +21,8 @@ import java.util.UUID;
 public class FileUploadService implements IFileUploadService {
     @Value("${tempPath}")
     private String temporaryPath;
+    private final double MAX_SIZE = 500;
+    private final String RESIZE_PREFIX_NAME = "thumb_";
 
 //    private String fileName;
 
@@ -37,14 +42,63 @@ public class FileUploadService implements IFileUploadService {
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists() || resource.isReadable()) {
-                return resource;
+                Path fileSavePath = Paths.get(temporaryPath + RESIZE_PREFIX_NAME + fileName);
+                Resource resourceThumb = new UrlResource(fileSavePath.toUri());
+                if (!resourceThumb.exists() || !resourceThumb.isReadable()) {
+                    File file = new File(fileSavePath.toString());
+                    ImageIO.write(resizeImage(fileName), "JPG", file);
+                    return resourceThumb;
+                }
+                return resourceThumb;
             } else {
                 throw new RuntimeException("Could not read the file!");
             }
-        } catch (MalformedURLException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Error: " + e.getMessage());
         }
     }
 
 
+
+    public BufferedImage resizeImage(String fileName) throws IOException {
+        Path filePath = Paths.get(temporaryPath + fileName);
+        File originalFile = new File(filePath.toString());
+        BufferedImage previewImage = ImageIO.read(originalFile);
+        BufferedImage outputImage;
+        double width = previewImage.getWidth();
+        double height = previewImage.getHeight();
+
+
+        if (width >= height) {
+            double coefficient = width / height;
+            int targetHeight = (int) Math.round(MAX_SIZE / coefficient);
+            Image resultingImage = previewImage.getScaledInstance((int) MAX_SIZE, targetHeight, Image.SCALE_DEFAULT);
+            outputImage = new BufferedImage(
+                    (int) MAX_SIZE, (int) Math.round(MAX_SIZE / coefficient), BufferedImage.TYPE_INT_RGB);
+            outputImage.getGraphics().drawImage(resultingImage, 0, 0, null);
+            return outputImage;
+        } else {
+            double coefficient = height / width;
+            int targetWidth = (int) Math.round(MAX_SIZE / coefficient);
+            Image resultingImage = previewImage.getScaledInstance(targetWidth, (int) MAX_SIZE, Image.SCALE_DEFAULT);
+            outputImage = new BufferedImage(
+                    targetWidth, (int) MAX_SIZE, BufferedImage.TYPE_INT_RGB);
+            outputImage.getGraphics().drawImage(resultingImage, 0, 0, null);
+            return outputImage;
+        }
+    }
 }
+
+//C:\Users\User\Desktop
+
+
+
+
+
+
+
+
+
+
+
+
