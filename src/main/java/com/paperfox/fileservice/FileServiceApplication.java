@@ -1,13 +1,11 @@
 package com.paperfox.fileservice;
 
-
 import com.paperfox.fileservice.services.FileUploadService;
 import jankovicsandras.imagetracer.ImageTracer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -45,7 +43,7 @@ public class FileServiceApplication {
             File originalFile = new File(filePath.toString());
             BufferedImage previewImage = ImageIO.read(originalFile);
             previewImage = scaleCanvas(previewImage, 16);
-            previewImage = createOffsetPath(previewImage, 16);
+//            previewImage = createOffsetPath(previewImage, 16);
 //            String vector = makeVector(previewImage);
 //
 //            String svgNS = SVGDOMImplementation.SVG_NAMESPACE_URI;
@@ -151,88 +149,88 @@ public class FileServiceApplication {
         return resultImage;
     }
 
-    public static BufferedImage createOffsetPath(BufferedImage image, int offsetSize) {
-        BufferedImage resultImage = new BufferedImage(
-                image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-
-        Color black = new Color(0, 0, 0, 255);
-
-        for (int i = 0; i < image.getWidth(); i++) {
-            for (int j = 0; j < image.getHeight(); j++) {
-                if (image.getRaster().getPixel(i, j, (int[]) null)[3] > 0) {
-                    for (int p = 1; p <= offsetSize; p++) {
-                        if (i + p < image.getWidth() && j + p < image.getHeight()) {
-                            resultImage.setRGB(i + p, j, black.getRGB());
-                            resultImage.setRGB(i, j + p, black.getRGB());
-                            resultImage.setRGB(i + p, j + p, black.getRGB());
-                        }
-
-                        if (i - p >= 0 && j - p >= 0) {
-                            resultImage.setRGB(i - p, j, black.getRGB());
-                            resultImage.setRGB(i, j - p, black.getRGB());
-                            resultImage.setRGB(i - p, j - p, black.getRGB());
-                        }
-
-                        if (i - p >= 0 && j + p < image.getHeight()) {
-                            resultImage.setRGB(i - p, j + p, black.getRGB());
-                        }
-                        if (i + p < image.getWidth() && j - p >= 0) {
-                            resultImage.setRGB(i + p, j - p, black.getRGB());
-                        }
-                    }
-                }
-            }
-        }
-        return resultImage;
-    }
-
-    public static String makeVector(BufferedImage imageToTrace) {
-        String vector = "no data";
-        try {
-            // Options
-            HashMap<String, Float> options = new HashMap<String, Float>();
-
-            // Tracing
-            options.put("ltres", 100f);
-            options.put("qtres", 100f);
-            options.put("pathomit", 100f);
-//            // Color quantization
-            options.put("colorsampling", 1f); // 1f means true ; 0f means false: starting with generated palette
-            options.put("numberofcolors", 2f);
-//            options.put("mincolorratio", 0.02f);
-//            options.put("colorquantcycles", 255f);
-            // SVG rendering
-            options.put("scale", 1f);
-//            options.put("roundcoords", 10f); // 1f means rounded to 1 decimal places, like 7.3 ; 3f means rounded to 3 places, like 7.356 ; etc.
-            options.put("lcpr", 0f);
-//            options.put("qcpr", 0f);
-//            options.put("desc", 1f); // 1f means true ; 0f means false: SVG descriptions deactivated
-//            options.put("viewbox", 0f); // 1f means true ; 0f means false: fixed width and height
-
-            // Selective Gauss Blur
-            options.put("blurradius", 2f); // 0f means deactivated; 1f .. 5f : blur with this radius
-            options.put("blurdelta", 255f); // smaller than this RGB difference will be blurred
-
-            // Palette
-            // This is an example of a grayscale palette
-            // please note that signed byte values [ -128 .. 127 ] will be converted to [ 0 .. 255 ] in the getsvgstring function
-            byte[][] palette = new byte[8][4];
-            for (int colorcnt = 0; colorcnt < 8; colorcnt++) {
-                palette[colorcnt][0] = (byte) (-128 + colorcnt * 32); // R
-                palette[colorcnt][1] = (byte) (-128 + colorcnt * 32); // G
-                palette[colorcnt][2] = (byte) (-128 + colorcnt * 32); // B
-                palette[colorcnt][3] = (byte) 127;              // A
-            }
-
-            vector = ImageTracer.imageToSVG(imageToTrace, options, null);
-            ImageTracer.saveString("C:/Users/User/Desktop/testImageTracer/result/vector.svg", vector);
-//            return vector;
-            ImageTracer.saveString("C:/Users/User/Desktop/testImageTracer/result/vector.svg",
-                    ImageTracer.imageToSVG(imageToTrace, options, null)
-            );
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return vector;
-    }
+//    public static BufferedImage createOffsetPath(BufferedImage image, int offsetSize) {
+//        BufferedImage resultImage = new BufferedImage(
+//                image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+//
+//        Color black = new Color(0, 0, 0, 255);
+//
+//        for (int i = 0; i < image.getWidth(); i++) {
+//            for (int j = 0; j < image.getHeight(); j++) {
+//                if (image.getRaster().getPixel(i, j, (int[]) null)[3] > 0) {
+//                    for (int p = 1; p <= offsetSize; p++) {
+//                        if (i + p < image.getWidth() && j + p < image.getHeight()) {
+//                            resultImage.setRGB(i + p, j, black.getRGB());
+//                            resultImage.setRGB(i, j + p, black.getRGB());
+//                            resultImage.setRGB(i + p, j + p, black.getRGB());
+//                        }
+//
+//                        if (i - p >= 0 && j - p >= 0) {
+//                            resultImage.setRGB(i - p, j, black.getRGB());
+//                            resultImage.setRGB(i, j - p, black.getRGB());
+//                            resultImage.setRGB(i - p, j - p, black.getRGB());
+//                        }
+//
+//                        if (i - p >= 0 && j + p < image.getHeight()) {
+//                            resultImage.setRGB(i - p, j + p, black.getRGB());
+//                        }
+//                        if (i + p < image.getWidth() && j - p >= 0) {
+//                            resultImage.setRGB(i + p, j - p, black.getRGB());
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        return resultImage;
+//    }
+//
+//    public static String makeVector(BufferedImage imageToTrace) {
+//        String vector = "no data";
+//        try {
+//            // Options
+//            HashMap<String, Float> options = new HashMap<String, Float>();
+//
+//            // Tracing
+//            options.put("ltres", 100f);
+//            options.put("qtres", 100f);
+//            options.put("pathomit", 100f);
+////            // Color quantization
+//            options.put("colorsampling", 1f); // 1f means true ; 0f means false: starting with generated palette
+//            options.put("numberofcolors", 2f);
+////            options.put("mincolorratio", 0.02f);
+////            options.put("colorquantcycles", 255f);
+//            // SVG rendering
+//            options.put("scale", 1f);
+////            options.put("roundcoords", 10f); // 1f means rounded to 1 decimal places, like 7.3 ; 3f means rounded to 3 places, like 7.356 ; etc.
+//            options.put("lcpr", 0f);
+////            options.put("qcpr", 0f);
+////            options.put("desc", 1f); // 1f means true ; 0f means false: SVG descriptions deactivated
+////            options.put("viewbox", 0f); // 1f means true ; 0f means false: fixed width and height
+//
+//            // Selective Gauss Blur
+//            options.put("blurradius", 2f); // 0f means deactivated; 1f .. 5f : blur with this radius
+//            options.put("blurdelta", 255f); // smaller than this RGB difference will be blurred
+//
+//            // Palette
+//            // This is an example of a grayscale palette
+//            // please note that signed byte values [ -128 .. 127 ] will be converted to [ 0 .. 255 ] in the getsvgstring function
+//            byte[][] palette = new byte[8][4];
+//            for (int colorcnt = 0; colorcnt < 8; colorcnt++) {
+//                palette[colorcnt][0] = (byte) (-128 + colorcnt * 32); // R
+//                palette[colorcnt][1] = (byte) (-128 + colorcnt * 32); // G
+//                palette[colorcnt][2] = (byte) (-128 + colorcnt * 32); // B
+//                palette[colorcnt][3] = (byte) 127;              // A
+//            }
+//
+//            vector = ImageTracer.imageToSVG(imageToTrace, options, null);
+//            ImageTracer.saveString("C:/Users/User/Desktop/testImageTracer/result/vector.svg", vector);
+////            return vector;
+//            ImageTracer.saveString("C:/Users/User/Desktop/testImageTracer/result/vector.svg",
+//                    ImageTracer.imageToSVG(imageToTrace, options, null)
+//            );
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return vector;
+//    }
 }

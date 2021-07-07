@@ -26,11 +26,8 @@ public class FileUploadService implements IFileUploadService {
     private final double MAX_SIZE = 500;
     private final String RESIZE_PREFIX_NAME = "thumb_";
 
-//    private String fileName;
-
     @Override
     public String uploadFile(MultipartFile file) throws IOException {
-
         //todo: create directory with UUID name, dont use UUID in file name
         UUID uuid = UUID.randomUUID();
         String fileName = uuid.toString() + "_" + file.getOriginalFilename();
@@ -96,7 +93,7 @@ public class FileUploadService implements IFileUploadService {
         if (width >= height) {
             double coefficient = width / height;
             int targetHeight = (int) Math.round(MAX_SIZE / coefficient);
-            Image resultingImage = previewImage.getScaledInstance((int) MAX_SIZE, targetHeight, Image.SCALE_DEFAULT);
+            Image resultingImage = previewImage.getScaledInstance((int) MAX_SIZE, targetHeight, Image.SCALE_SMOOTH);
             outputImage = new BufferedImage(
                     (int) MAX_SIZE, (int) Math.round(MAX_SIZE / coefficient), BufferedImage.TYPE_INT_RGB);
             outputImage.getGraphics().drawImage(resultingImage, 0, 0, null);
@@ -104,7 +101,7 @@ public class FileUploadService implements IFileUploadService {
         } else {
             double coefficient = height / width;
             int targetWidth = (int) Math.round(MAX_SIZE / coefficient);
-            Image resultingImage = previewImage.getScaledInstance(targetWidth, (int) MAX_SIZE, Image.SCALE_DEFAULT);
+            Image resultingImage = previewImage.getScaledInstance(targetWidth, (int) MAX_SIZE, Image.SCALE_SMOOTH);
             outputImage = new BufferedImage(
                     targetWidth, (int) MAX_SIZE, BufferedImage.TYPE_INT_RGB);
             outputImage.getGraphics().drawImage(resultingImage, 0, 0, null);
@@ -112,8 +109,6 @@ public class FileUploadService implements IFileUploadService {
         }
     }
 }
-
-//C:\Users\User\Desktop
 
 
 
