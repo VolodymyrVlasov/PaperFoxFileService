@@ -35,7 +35,7 @@ public class FileUploadController {
         return formData;
     }
 
-    @GetMapping("/files/{filename:.+}")
+    @GetMapping("/api/files/{filename:.+}")
     @ResponseBody
     public ResponseEntity<Resource> getFile(@PathVariable String filename) {
         Resource file =  fileUploadService.getPreview(filename);

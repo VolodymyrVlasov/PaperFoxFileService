@@ -43,6 +43,7 @@ public class FileUploadService implements IFileUploadService {
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists() || resource.isReadable()) {
+                System.out.println("file is exist");
                 Path fileSavePath = Paths.get(temporaryPath + RESIZE_PREFIX_NAME + fileName);
                 Resource resourceThumb = new UrlResource(fileSavePath.toUri());
                 if (!resourceThumb.exists() || !resourceThumb.isReadable()) {
@@ -52,6 +53,7 @@ public class FileUploadService implements IFileUploadService {
                         ImageIO.write(renderPDF(fileName), "JPG", file);
                     } else {
                         ImageIO.write(resizeImage(fileName), "JPG", file);
+                        System.out.println("file was write to storage");
                     }
                     return resourceThumb;
                 }
