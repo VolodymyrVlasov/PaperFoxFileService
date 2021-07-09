@@ -21,10 +21,10 @@ import java.util.UUID;
 
 @Component
 public class FileUploadService implements IFileUploadService {
-    @Value("${tempPath}")
-    private String temporaryPath;
     private final double MAX_SIZE = 500;
     private final String RESIZE_PREFIX_NAME = "thumb_";
+    @Value("${tempPath}")
+    private String temporaryPath;
 
     @Override
     public String uploadFile(MultipartFile file) throws IOException {

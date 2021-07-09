@@ -1,6 +1,8 @@
 package com.paperfox.fileservice.controllers;
 
+import com.paperfox.fileservice.models.ProductType;
 import com.paperfox.fileservice.services.FileUploadService;
+import com.paperfox.fileservice.services.imageService.ImageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,23 +24,30 @@ public class FileUploadController {
     @Autowired
     private FileUploadService fileUploadService;
 
+    @Autowired
+    private ImageService imageService;
+
     @RequestMapping(value = "/api/file/upload", method = RequestMethod.POST)
-    private MultiValueMap fileUpload(@RequestParam("file") MultipartFile file) {
+    private MultiValueMap fileUpload(@RequestParam("file") MultipartFile file, @RequestParam("productType") String productType) {
         MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
         try {
-            logger.info(file.getName());
+            ProductType type = ProductType.asType(productType);
             String filePath = fileUploadService.uploadFile(file);
+
             formData.add("filePath", filePath);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return formData;
     }
 
+
+
     @GetMapping("/api/files/{filename:.+}")
     @ResponseBody
     public ResponseEntity<Resource> getFile(@PathVariable String filename) {
-        Resource file =  fileUploadService.getPreview(filename);
+//        Resource file = fileUploadService.getPreview(filename);
+        Resource file = imageService.getPreview(filename);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"").body(file);
     }

@@ -1,10 +1,8 @@
 package com.paperfox.fileservice;
 
 import com.paperfox.fileservice.services.FileUploadService;
-import jankovicsandras.imagetracer.ImageTracer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -23,7 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 
 @SpringBootApplication
 public class FileServiceApplication {
