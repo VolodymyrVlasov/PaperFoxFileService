@@ -6,26 +6,36 @@ public class Size {
     public double diameter;
     public double borderRadius;
 
-    public Size(double width, double height, double diameter, double borderRadius) {
-        this.width = width;
-        this.height = height;
-        this.diameter = diameter;
-        this.borderRadius = borderRadius;
+    public double getWidth() {
+        return width;
     }
 
-//    public Size(int width, int height) {
-//        this.width = width;
-//        this.height = height;
-//    }
-
-    public Size(int width, int height, int borderRadius) {
+    public void setWidth(double width) {
         this.width = width;
-        this.height = height;
-        this.borderRadius = borderRadius;
     }
 
-    public Size(int diameter) {
+    public double getHeight() {
+        return height;
+    }
+
+    public void setHeight(double height) {
+        this.height = height;
+    }
+
+    public double getDiameter() {
+        return diameter;
+    }
+
+    public void setDiameter(double diameter) {
         this.diameter = diameter;
+    }
+
+    public double getBorderRadius() {
+        return borderRadius;
+    }
+
+    public void setBorderRadius(double borderRadius) {
+        this.borderRadius = borderRadius;
     }
 
     @Override

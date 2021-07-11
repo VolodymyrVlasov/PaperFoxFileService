@@ -1,6 +1,8 @@
 package com.paperfox.fileservice.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.paperfox.fileservice.models.ProductType;
+import com.paperfox.fileservice.models.Size;
 import com.paperfox.fileservice.services.FileUploadService;
 import com.paperfox.fileservice.services.imageService.ImageService;
 import org.slf4j.Logger;
@@ -28,26 +30,33 @@ public class FileUploadController {
     private ImageService imageService;
 
     @RequestMapping(value = "/api/file/upload", method = RequestMethod.POST)
-    private MultiValueMap fileUpload(@RequestParam("file") MultipartFile file, @RequestParam("productType") String productType) {
+    private MultiValueMap fileUpload(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("productType") String productType,
+            @RequestParam("productSize") String productSize) {
         MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
         try {
             ProductType type = ProductType.asType(productType);
-            String filePath = fileUploadService.uploadFile(file);
+            ObjectMapper mapper = new ObjectMapper();
+            Size size = mapper.readValue(productSize, Size.class);
 
+            String filePath = fileUploadService.uploadFile(file);
             formData.add("filePath", filePath);
+
+            imageService.createWorkingFilesByProductType(type, file, size);
+
+            logger.info(file.getName() + "\n" + type + "\n" + size.toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
         return formData;
     }
 
-
-
     @GetMapping("/api/files/{filename:.+}")
     @ResponseBody
     public ResponseEntity<Resource> getFile(@PathVariable String filename) {
-//        Resource file = fileUploadService.getPreview(filename);
-        Resource file = imageService.getPreview(filename);
+        Resource file = fileUploadService.getPreview(filename);
+//        Resource file = imageService.getPreview(filename);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"").body(file);
     }
