@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.UUID;
 @Component
-public class PNG {
+public class PNGDrawer {
     private double DPI = 300;
     private String TEMP_PATH = "C:/Users/User/Desktop/testImageTracer/temp/";
 

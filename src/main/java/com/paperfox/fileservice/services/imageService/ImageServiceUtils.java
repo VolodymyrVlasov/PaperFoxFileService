@@ -10,7 +10,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,10 +26,9 @@ import java.util.Iterator;
 import java.util.UUID;
 
 @Component
-public abstract class ImageServiceUtils implements IImageService {
+public abstract class ImageServiceUtils {
     public final double DPI = 300.0d;
 
-    @Override
     public BufferedImage getScaledToPrintSizeImage(MultipartFile file, Size size) throws Exception {
         int widthPx = (int) Math.round(size.width / 25.4d * this.DPI);
         int heightPx = (int) Math.round(size.height / 25.4d * this.DPI);
@@ -44,7 +42,6 @@ public abstract class ImageServiceUtils implements IImageService {
         return scaledImage;
     }
 
-    @Override
     public BufferedImage getCutMaskImage(BufferedImage originalImage, int offsetPixels) {
         // todo: optimize method
         // todo: implement scaleCanvas() from FileServiceApplication
@@ -80,18 +77,6 @@ public abstract class ImageServiceUtils implements IImageService {
         return resultImage;
     }
 
-    @Override
-    public File getCutContour(BufferedImage cutMaskImage) throws Exception {
-        String vector = ImageTracer.imageToSVG(cutMaskImage, getTraceOption(), null); // getPalette()
-//            ImageTracer.saveString("C:/Users/User/Desktop/testImageTracer/result/vector.svg", vector);
-//            ImageTracer.saveString("C:/Users/User/Desktop/testImageTracer/result/vector.svg",
-//                    ImageTracer.imageToSVG(cutMaskImage, options, null)
-//            );
-        // todo: dont work with storage in this class
-        File file = new File("vector.svg");
-        FileUtils.writeStringToFile(file, vector);
-        return file;
-    }
 
     private PDRectangle getMediaBox(Size size, int bleedMM) {
         float c = 2.834645857142857f;
@@ -99,7 +84,6 @@ public abstract class ImageServiceUtils implements IImageService {
         return mediaBox;
     }
 
-    @Override
     public void getPrintPDF(File rasterDesign, Size size, ProductType type) throws Exception {
         float c = 2.834645857142857f;
 
@@ -107,39 +91,11 @@ public abstract class ImageServiceUtils implements IImageService {
 //        PDPage page = new PDPage();
 
         if (type == ProductType.ROUND) {
-            int bleedMM = 1;
-//            page.setMediaBox(getMediaBox(size, bleedMM));
-//            pdf.addPage(page);
-            String cutShapeString = SVGDrawer.getCircle(size);
-            File svgTempCutFile = new File("C:/Users/User/Desktop/testImageTracer/temp/" + UUID.randomUUID().toString().split("-")[0] + ".svg");
-            File pdfTempCutFile = new File("C:/Users/User/Desktop/testImageTracer/temp/" + UUID.randomUUID().toString().split("-")[0] + ".pdf");
-            FileUtils.writeStringToFile(svgTempCutFile, cutShapeString);
-            SVGConverterUtils converter = new SVGConverterUtils();
-
-            converter.svg2PDF(svgTempCutFile, pdfTempCutFile);
-//            Thread.sleep(50);
-//
-//            PDPageContentStream stream = new PDPageContentStream(pdf, page);
-//            PDImageXObject image = PDImageXObject.createFromFileByContent(rasterDesign, pdf);
-//            PDImageXObject cut = PDImageXObject.createFromFileByContent(pdfTempCutFile, pdf);
-//
-//            stream.drawImage(image, 0, 0, (float) (size.getWidth() * c), (float) (size.getHeight() * c));
-//            stream.drawImage(cut, bleedMM * c, bleedMM * c, (float) (size.getWidth() * c), (float) (size.getHeight() * c));
-//            stream.close();
-//
-//            File fileToPrint = new File(
-//                    "C:/Users/User/Desktop/testImageTracer/" +
-//                            UUID.randomUUID().toString().split("-")[0] +
-//                            "_round_" + size.getDiameter() + "mm.pdf");
-//            pdf.save(fileToPrint);
-//            svgTempCutFile.delete();
-//            pdfTempCutFile.delete();
 
         } else if (type == ProductType.SQUARED) {
             if (size.getBorderRadius() != 0) {
-
                 int bleedMM = 1;
-                String cutShapeString = SVGDrawer.getRounderRect(size);
+                String cutShapeString = SVGDrawer.getRounderRectContour(size);
                 File svgTempCutFile = new File("C:/Users/User/Desktop/testImageTracer/temp/" + UUID.randomUUID().toString().split("-")[0] + ".svg");
                 File pdfTempCutFile = new File("C:/Users/User/Desktop/testImageTracer/temp/" + UUID.randomUUID().toString().split("-")[0] + ".pdf");
 
@@ -168,19 +124,16 @@ public abstract class ImageServiceUtils implements IImageService {
 //                svgTempCutFile.delete();
 //                pdfTempCutFile.delete();
             } else {
-//                page.setMediaBox(getMediaBox(size, 0));
-//                pdf.addPage(page);
+                // todo: make file to print without bleeds for rectangle shape
             }
         } else if (type == ProductType.FIGURE) {
-//            page.setMediaBox(getMediaBox(size, 2));
-//            pdf.addPage(page);
+                // todo: make file to print with bleeds for figured shape
         } else {
             throw new Exception("product type undefined");
         }
     }
 
 
-    @Override
     public void getPreview(BufferedImage originalImage) {
         // scale image to 500 px in max length side
         // create cut mask image
@@ -205,7 +158,6 @@ public abstract class ImageServiceUtils implements IImageService {
                 if (metadata.isReadOnly() || !metadata.isStandardMetadataFormatSupported()) {
                     continue;
                 }
-
 
                 IIOMetadataNode horiz = new IIOMetadataNode("HorizontalPixelSize");
                 horiz.setAttribute("value", Double.toString(dotsPerMilli));
