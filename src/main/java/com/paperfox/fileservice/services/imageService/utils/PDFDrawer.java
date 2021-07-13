@@ -9,13 +9,15 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.rendering.PDFRenderer;
 
+import javax.imageio.ImageIO;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 
-public class DPFDrawer {
-    public static PDDocument generateSideBySidePDF(File printFile, File cutFile) throws IOException {
+public class PDFDrawer {
+    public static File generatePrintingPDF(File printFile, File cutFile, File destinationFolder) throws IOException {
         PDDocument pdf1 = null;
         PDDocument pdf2 = null;
         PDDocument outPdf = null;
@@ -48,23 +50,21 @@ public class DPFDrawer {
             layerUtility.appendFormAsLayer(outPdfPage, formPdf1, afLeft, "left");
             AffineTransform afRight = AffineTransform.getTranslateInstance(0.0, 0.0);
             layerUtility.appendFormAsLayer(outPdfPage, formPdf2, afRight, "right");
-            return outPdf;
+            File resultPdf = new File(destinationFolder.toString() + "/full_" + UUID.randomUUID().toString().split("-")[0] + ".pdf");
+            outPdf.save(resultPdf);
+            return resultPdf;
         } finally {
             if (pdf1 != null) pdf1.close();
             if (pdf2 != null) pdf2.close();
             if (outPdf != null) outPdf.close();
-            printFile.delete();
-            cutFile.delete();
         }
     }
 
-    public BufferedImage renderPDF(PDDocument pdf) throws IOException {
-        try {
-            return new PDFRenderer(pdf).renderImageWithDPI(0, 300);
-        } finally {
-            if (pdf != null) {
-                pdf.close();
-            }
-        }
+    public static File renderPDF(File pdf, File destinationFolder) throws IOException {
+        PDDocument pdfFile = PDDocument.load(pdf);
+        BufferedImage image = new PDFRenderer(pdfFile).renderImageWithDPI(0, 300);
+        File previewFile = new File(pdf.getParentFile() + "/preview_" + pdf.getName() + ".png");
+        ImageIO.write(image, "png", previewFile);
+        return previewFile;
     }
 }

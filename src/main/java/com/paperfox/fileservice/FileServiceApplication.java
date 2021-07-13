@@ -66,11 +66,11 @@ public class FileServiceApplication {
                         attributeOpacity.setNodeValue("1.0");
                         attributeColor.setNodeValue("rgb(255,0,0)");
                     }
-                    System.out.println(nodeList.item(i).getAttributes().getNamedItem("fill").getNodeValue());
+//                    System.out.println(nodeList.item(i).getAttributes().getNamedItem("fill").getNodeValue());
                 }
             }
 
-            System.out.println(document);
+//            System.out.println(document);
             DOMSource dom = new DOMSource(document);
             Transformer transformer = TransformerFactory.newDefaultInstance().newTransformer();
             Result result = new StreamResult(svg);

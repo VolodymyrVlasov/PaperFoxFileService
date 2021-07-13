@@ -18,7 +18,7 @@ public class SVGDrawer {
                 "</svg>";
     }
 
-    public static String getRounderRectContour(Size size) {
+    public static String getRectContour(Size size) {
         double c = 5.29d;
         double width = size.getWidth() * c;
         double height = size.getHeight() * c;

@@ -30,7 +30,7 @@ public class FileUploadService implements IFileUploadService {
     public String uploadFile(MultipartFile file) throws IOException {
         //todo: create directory with UUID name, dont use UUID in file name
         UUID uuid = UUID.randomUUID();
-        String fileName = uuid.toString() + "_" + file.getOriginalFilename();
+        String fileName = "OLD VERSION - - - " + uuid.toString() + "_" + file.getOriginalFilename();
         Path filePath = Paths.get(temporaryPath + fileName);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
         return fileName;

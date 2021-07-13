@@ -4,7 +4,7 @@ import com.paperfox.fileservice.models.ProductType;
 import com.paperfox.fileservice.models.Size;
 import com.paperfox.fileservice.services.imageService.utils.SVGConverterUtils;
 import com.paperfox.fileservice.services.imageService.utils.SVGDrawer;
-import jankovicsandras.imagetracer.ImageTracer;
+import org.apache.batik.transcoder.TranscoderException;
 import org.apache.commons.io.FileUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -21,6 +21,7 @@ import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.UUID;
@@ -28,6 +29,21 @@ import java.util.UUID;
 @Component
 public abstract class ImageServiceUtils {
     public final double DPI = 300.0d;
+
+    public Size getPrintingSize(Size size, double bleed){
+        Size printingSize = new Size();
+        printingSize.setWidth(size.getWidth() + bleed);
+        printingSize.setHeight(size.getHeight() + bleed);
+        printingSize.setBorderRadius(size.getBorderRadius());
+        return printingSize;
+    }
+
+    public File convertSVGtoPDF(String svg, File destinationFolder) throws IOException, TranscoderException {
+        File pdfFile = new File(destinationFolder.toString() + "/cut_" + UUID.randomUUID().toString().split("-")[0] + ".pdf");
+        SVGConverterUtils converter = new SVGConverterUtils();
+        converter.svg2PDF(svg, converter.getOutputStream(pdfFile));
+        return pdfFile;
+    }
 
     public BufferedImage getScaledToPrintSizeImage(MultipartFile file, Size size) throws Exception {
         int widthPx = (int) Math.round(size.width / 25.4d * this.DPI);
@@ -95,7 +111,7 @@ public abstract class ImageServiceUtils {
         } else if (type == ProductType.SQUARED) {
             if (size.getBorderRadius() != 0) {
                 int bleedMM = 1;
-                String cutShapeString = SVGDrawer.getRounderRectContour(size);
+                String cutShapeString = SVGDrawer.getRectContour(size);
                 File svgTempCutFile = new File("C:/Users/User/Desktop/testImageTracer/temp/" + UUID.randomUUID().toString().split("-")[0] + ".svg");
                 File pdfTempCutFile = new File("C:/Users/User/Desktop/testImageTracer/temp/" + UUID.randomUUID().toString().split("-")[0] + ".pdf");
 
