@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 public class SVGDrawer {
     public static String getCircleContour(Size size) {
-        double c = 5.29d;
+        double c = 3.8;
         double diameter = size.getDiameter() * c;
 
         return "<svg width=\"" + diameter + "\" height=\"" + diameter + "\" viewBox=\"0 0 " + diameter + " " + diameter +
@@ -19,14 +19,14 @@ public class SVGDrawer {
     }
 
     public static String getRectContour(Size size) {
-        double c = 5.29d;
-        double width = size.getWidth() * c;
-        double height = size.getHeight() * c;
-        double borderRadius = size.getBorderRadius() * c;
+        double c = 3.8;
+        double width = Math.floor(size.getWidth() * c);
+        double height = Math.floor(size.getHeight() * c);
+        double borderRadius = Math.floor(size.getBorderRadius() * c);
 
-        return "<svg width=\"" + width + "\" height=\"" + height + "\" viewBox=\"0 0 " + width + " " + height +
+        return "<svg width=\"" + width + 1 + "\" height=\"" + height + 1 + "\" viewBox=\"0 0 " + width + " " + height +
                 "\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">" +
-                "<rect x=\"0\" y=\"0\" width=\"" + width + "\" height=\"" + height + "\" rx=\"" + borderRadius + "\" stroke=\"#FF7A00\" stroke-linecap=\"round\" " +
+                "<rect x=\"0.5\" y=\"0.5\" width=\"" + (width - 1.2)  + "\" height=\"" + (height - 1.25) + "\" rx=\"" + borderRadius + "\" stroke=\"#FF7A00\" stroke-linecap=\"round\" " +
                 "stroke-dasharray=\"10 5\"/></svg>";
     }
 

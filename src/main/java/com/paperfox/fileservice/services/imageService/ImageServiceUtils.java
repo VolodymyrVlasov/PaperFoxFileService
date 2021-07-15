@@ -29,8 +29,10 @@ import java.util.UUID;
 @Component
 public abstract class ImageServiceUtils {
     public final double DPI = 300.0d;
+    private final double MAX_SIZE = 500;
+    private final String RESIZE_PREFIX_NAME = "thumb_";
 
-    public Size getPrintingSize(Size size, double bleed){
+    public Size getPrintingSize(Size size, double bleed) {
         Size printingSize = new Size();
         printingSize.setWidth(size.getWidth() + bleed);
         printingSize.setHeight(size.getHeight() + bleed);
@@ -44,6 +46,43 @@ public abstract class ImageServiceUtils {
         converter.svg2PDF(svg, converter.getOutputStream(pdfFile));
         return pdfFile;
     }
+
+    public File createPreview(File originalFile) throws IOException {
+        BufferedImage previewImage = ImageIO.read(originalFile);
+        BufferedImage outputImage;
+        double width = previewImage.getWidth();
+        double height = previewImage.getHeight();
+
+        if (width >= height) {
+            double coefficient = width / height;
+            int targetHeight = (int) Math.round(MAX_SIZE / coefficient);
+            Image resultingImage = previewImage.getScaledInstance((int) MAX_SIZE, targetHeight, Image.SCALE_SMOOTH);
+            outputImage = new BufferedImage(
+                    (int) MAX_SIZE, (int) Math.round(MAX_SIZE / coefficient), BufferedImage.TYPE_INT_RGB);
+            outputImage.getGraphics().drawImage(resultingImage, 0, 0, null);
+            File file = new File(originalFile.getParent() + "/" + RESIZE_PREFIX_NAME + originalFile.getName().split("\\.")[0] + ".png");
+            originalFile.delete();
+            ImageIO.write(outputImage, "png", file);
+            return file;
+        } else {
+            double coefficient = height / width;
+            int targetWidth = (int) Math.round(MAX_SIZE / coefficient);
+            Image resultingImage = previewImage.getScaledInstance(targetWidth, (int) MAX_SIZE, Image.SCALE_SMOOTH);
+            outputImage = new BufferedImage(
+                    targetWidth, (int) MAX_SIZE, BufferedImage.TYPE_INT_RGB);
+            outputImage.getGraphics().drawImage(resultingImage, 0, 0, null);
+            File file = new File(originalFile.getAbsolutePath() + RESIZE_PREFIX_NAME + originalFile.getName() + ".jpg");
+            ImageIO.write(outputImage, "png", file);
+            return file;
+        }
+    }
+
+    private PDRectangle getMediaBox(Size size, int bleedMM) {
+        float c = 2.834645857142857f;
+        PDRectangle mediaBox = new PDRectangle((float) ((size.getWidth() + bleedMM * 2) * c), (float) ((size.getHeight() + bleedMM * 2) * c));
+        return mediaBox;
+    }
+
 
     public BufferedImage getScaledToPrintSizeImage(MultipartFile file, Size size) throws Exception {
         int widthPx = (int) Math.round(size.width / 25.4d * this.DPI);
@@ -94,12 +133,6 @@ public abstract class ImageServiceUtils {
     }
 
 
-    private PDRectangle getMediaBox(Size size, int bleedMM) {
-        float c = 2.834645857142857f;
-        PDRectangle mediaBox = new PDRectangle((float) ((size.getWidth() + bleedMM * 2) * c), (float) ((size.getHeight() + bleedMM * 2) * c));
-        return mediaBox;
-    }
-
     public void getPrintPDF(File rasterDesign, Size size, ProductType type) throws Exception {
         float c = 2.834645857142857f;
 
@@ -143,7 +176,7 @@ public abstract class ImageServiceUtils {
                 // todo: make file to print without bleeds for rectangle shape
             }
         } else if (type == ProductType.FIGURE) {
-                // todo: make file to print with bleeds for figured shape
+            // todo: make file to print with bleeds for figured shape
         } else {
             throw new Exception("product type undefined");
         }
