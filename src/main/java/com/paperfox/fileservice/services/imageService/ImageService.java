@@ -23,23 +23,21 @@ public class ImageService extends ImageServiceUtils {
     private String temporaryPath;
     private final double BLEED = 2;
 
-    public void createWorkingFilesByProductType(ProductType type, MultipartFile originalFile, Size size) throws Exception {
+    public String createWorkingFilesByProductType(ProductType type, MultipartFile originalFile, Size size) throws Exception {
         if (type == ProductType.FIGURE) {
             this.createFiguredStickerFiles(originalFile);
         } else if (type == ProductType.ROUND) {
             this.createRoundStickerFiles(originalFile);
         } else if (type == ProductType.SQUARED) {
-            this.createSquaredStickerFiles(originalFile, size, type);
+            return this.createSquaredStickerFiles(originalFile, size, type);
         } else if (type == ProductType.STICKER_SET) {
             this.createStickerSetFiles(originalFile);
-        } else {
-            throw new Exception("unExisted ProductType exception");
         }
+        throw new Exception("unExisted ProductType exception");
     }
 
-
     // todo: make method return type model of file path which include: name of temp directory, name of original file, name of printing file, name of preview file
-    private void createSquaredStickerFiles(MultipartFile originalFile, Size productSize, ProductType type) throws Exception {
+    private String createSquaredStickerFiles(MultipartFile originalFile, Size productSize, ProductType type) throws Exception {
         // create temp product folder (name: short uuid + time stamp)
         // save in temp directory original file
         // create printing size
@@ -48,7 +46,8 @@ public class ImageService extends ImageServiceUtils {
         // create pdf with two layers using cut contour(File) and printing image(File)  @File
         // create preview for frontend using complete pdf file(File) @String (filename)
         // delete files, leave only directory with: original file, file for print and preview file
-        File productFolder = new File(temporaryPath + UUID.randomUUID().toString().split("-")[0]);
+        String folderName = UUID.randomUUID().toString().split("-")[0];
+        File productFolder = new File(temporaryPath + folderName);
         if (!productFolder.exists()) productFolder.mkdirs();
         Files.copy(originalFile.getInputStream(), Paths.get(productFolder + "/original_" + originalFile.getOriginalFilename()),
                 StandardCopyOption.REPLACE_EXISTING);
@@ -57,11 +56,11 @@ public class ImageService extends ImageServiceUtils {
         File printingSizeImage = PDFDrawer.convertToPDF(rasterPrintingImage, printingSize, productFolder);
         File cutContour = convertSVGtoPDF(SVGDrawer.getRectContour(productSize), productFolder);
         File printingPDF = PDFDrawer.generatePrintingPDF(printingSizeImage, cutContour, productFolder);
-        createPreview(PDFDrawer.renderPDF(printingPDF));
-
+        File pr = createPreview(PDFDrawer.renderPDF(printingPDF));
         rasterPrintingImage.delete();
         printingSizeImage.delete();
         cutContour.delete();
+        return pr.getName();
     }
 
     private void createFiguredStickerFiles(MultipartFile originalFile) {

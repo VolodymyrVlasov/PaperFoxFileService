@@ -15,7 +15,6 @@ import java.util.Iterator;
 import java.util.UUID;
 @Component
 public class PNGDrawer {
-
     public static File scalePNGImage(BufferedImage gridImage, Size printingSize, File productDirectory) throws IOException {
         String FILE_TYPE = "png";
         String uniqName = UUID.randomUUID().toString().split("-")[0] + ".";

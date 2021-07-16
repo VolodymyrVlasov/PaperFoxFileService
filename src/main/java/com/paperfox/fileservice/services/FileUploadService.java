@@ -13,6 +13,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,33 +38,50 @@ public class FileUploadService implements IFileUploadService {
     }
 
     @Override
-    public Resource getPreview(String fileName) {
-        try {
-            Path filePath = Paths.get(temporaryPath + fileName);
-            Resource resource = new UrlResource(filePath.toUri());
-
-            if (resource.exists() || resource.isReadable()) {
-                System.out.println("file is exist");
-                Path fileSavePath = Paths.get(temporaryPath + RESIZE_PREFIX_NAME + fileName);
-                Resource resourceThumb = new UrlResource(fileSavePath.toUri());
-                if (!resourceThumb.exists() || !resourceThumb.isReadable()) {
-                    File file = new File(fileSavePath.toString());
-                    String[] temp = fileName.split("\\.");
-                    if (temp[temp.length - 1].toLowerCase().equals("pdf")) {
-                        ImageIO.write(renderPDF(fileName), "JPG", file);
-                    } else {
-                        ImageIO.write(resizeImage(fileName), "JPG", file);
-                        System.out.println("file was write to storage");
-                    }
-                    return resourceThumb;
+    public Resource getPreview(String fileName) throws MalformedURLException {
+            File root = new File(temporaryPath);
+            String[] dirList = root.list();
+            for (String dir : dirList) {
+                File preview = new File(temporaryPath + dir + "/" + fileName);
+                if (preview.exists()) {
+                    System.out.println("file is exist");
+                    Path filePath = Paths.get(preview.getPath());
+                    return new UrlResource(filePath.toUri());
                 }
-                return resourceThumb;
-            } else {
-                throw new RuntimeException("Could not read the file!");
             }
-        } catch (IOException e) {
-            throw new RuntimeException("Error: " + e.getMessage());
-        }
+
+
+//            Path filePath = Paths.get(temporaryPath);
+//            filePath.get
+//            Path filePath = Paths.get(temporaryPath + fileName);
+//            Resource resource = new UrlResource(filePath.toUri());
+//            System.out.println("file is exist");
+//            if (resource.exists() || resource.isReadable()) {
+//                System.out.println("file is exist");
+//                Path fileSavePath = Paths.get(temporaryPath  + fileName);
+//                Resource resourceThumb = new UrlResource(fileSavePath.toUri());
+//                System.out.println(fileSavePath.toString() + "     " +  resourceThumb.toString());
+
+//                if (!resourceThumb.exists() || !resourceThumb.isReadable()) {
+//                    File file = new File(fileSavePath.toString());
+//                    String[] temp = fileName.split("\\.");
+//                    if (temp[temp.length - 1].toLowerCase().equals("pdf")) {
+//                        ImageIO.write(renderPDF(fileName), "JPG", file);
+//                    } else {
+//                        ImageIO.write(resizeImage(fileName), "JPG", file);
+//                        System.out.println("file was write to storage");
+//                    }
+//                    return resourceThumb;
+//                }
+//                return resourceThumb;
+//                return resource;
+//            } else {
+//                throw new RuntimeException("Could not read the file!");
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException("Error: " + e.getMessage());
+//        }
+        throw new RuntimeException("Error: file not found");
     }
 
     public BufferedImage renderPDF(String fileName) throws IOException {

@@ -81,6 +81,7 @@ public class PDFDrawer {
         BufferedImage image = new PDFRenderer(pdfFile).renderImageWithDPI(0, 300);
         File previewFile = new File(pdf.getParentFile() + "/preview_" + pdf.getName() + ".png");
         ImageIO.write(image, "png", previewFile);
+        pdfFile.close();
         return previewFile;
     }
 }
