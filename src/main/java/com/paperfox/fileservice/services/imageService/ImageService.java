@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -27,13 +28,13 @@ public class ImageService extends ImageServiceUtils {
         if (type == ProductType.FIGURE) {
             this.createFiguredStickerFiles(originalFile);
         } else if (type == ProductType.ROUND) {
-            this.createRoundStickerFiles(originalFile);
+            return this.createRoundStickerFiles(originalFile);
         } else if (type == ProductType.SQUARED) {
             return this.createSquaredStickerFiles(originalFile, size, type);
         } else if (type == ProductType.STICKER_SET) {
             this.createStickerSetFiles(originalFile);
         }
-        throw new Exception("unExisted ProductType exception");
+        throw new Exception("unExisted ProductType exception " + type);
     }
 
     // todo: make method return type model of file path which include: name of temp directory, name of original file, name of printing file, name of preview file
@@ -66,8 +67,23 @@ public class ImageService extends ImageServiceUtils {
     private void createFiguredStickerFiles(MultipartFile originalFile) {
     }
 
-    private void createRoundStickerFiles(MultipartFile originalFile) {
+    private String createRoundStickerFiles(MultipartFile originalFile) throws IOException {
+        String dirName = originalFile.getOriginalFilename().split("_")[0];
+        File productFolder = new File(temporaryPath + dirName);
+        if (!productFolder.exists()){
+            productFolder.mkdirs();
+        } else {
+            File[] fileList = productFolder.listFiles();
+            for (File file: fileList) {
+                file.delete();
+            }
+        }
+        Files.copy(originalFile.getInputStream(), Paths.get(productFolder + "/original_" + originalFile.getOriginalFilename()),
+                StandardCopyOption.REPLACE_EXISTING);
 
+        // make preview
+        // make printing file
+        return originalFile.getOriginalFilename();
     }
 
     private void createStickerSetFiles(MultipartFile originalFile) {

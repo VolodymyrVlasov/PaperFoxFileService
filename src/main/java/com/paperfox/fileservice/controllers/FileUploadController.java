@@ -41,17 +41,12 @@ public class FileUploadController {
             @RequestParam("productSize") String productSize) {
         MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
         try {
+            logger.info("input file name ->>> " +file.getOriginalFilename());
             ProductType type = ProductType.asType(productType);
             ObjectMapper mapper = new ObjectMapper();
             Size size = mapper.readValue(productSize, Size.class);
-
-//            String filePath = fileUploadService.uploadFile(file);
             String filePath  = imageService.createWorkingFilesByProductType(type, file, size);
             formData.add("filePath", filePath);
-
-//            imageService.createWorkingFilesByProductType(type, file, size);
-
-//            logger.info(file.getName() + "\n" + type + "\n" + size.toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
