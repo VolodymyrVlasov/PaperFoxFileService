@@ -69,16 +69,16 @@ public class ImageService extends ImageServiceUtils {
 
     private String createRoundStickerFiles(MultipartFile originalFile) throws IOException {
         String dirName = originalFile.getOriginalFilename().split("_")[0];
-        File productFolder = new File(temporaryPath + dirName);
-        if (!productFolder.exists()){
+        File productFolder = new File(temporaryPath + "/" + dirName);
+        if (!productFolder.exists()) {
             productFolder.mkdirs();
         } else {
             File[] fileList = productFolder.listFiles();
-            for (File file: fileList) {
+            for (File file : fileList) {
                 file.delete();
             }
         }
-        Files.copy(originalFile.getInputStream(), Paths.get(productFolder + "/original_" + originalFile.getOriginalFilename()),
+        Files.copy(originalFile.getInputStream(), Paths.get(productFolder + "/" + originalFile.getOriginalFilename()),
                 StandardCopyOption.REPLACE_EXISTING);
 
         // make preview

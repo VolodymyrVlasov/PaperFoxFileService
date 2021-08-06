@@ -38,7 +38,8 @@ public class FileUploadController {
     private MultiValueMap fileUpload(
             @RequestParam("file") MultipartFile file,
             @RequestParam("productType") String productType,
-            @RequestParam("productSize") String productSize) {
+            @RequestParam("productSize") String productSize,
+            @RequestParam("productToken")String token){
         MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
         try {
             logger.info("input file name ->>> " +file.getOriginalFilename());
@@ -56,13 +57,7 @@ public class FileUploadController {
     @GetMapping("/api/files/{filename:.+}")
     @ResponseBody
     public ResponseEntity<Resource> getFile(@PathVariable String filename) throws MalformedURLException {
-//        System.out.println("TEST");
         Resource file = fileUploadService.getPreview(filename);
-//        Resource file = imageService.getPreview(filename);
-
-//        Path filePath = Paths.get("D:/fileService/temp/" + filename);
-//        System.out.println(filePath);
-//        Resource file = new UrlResource(filePath.toUri());
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"").body(file);
     }

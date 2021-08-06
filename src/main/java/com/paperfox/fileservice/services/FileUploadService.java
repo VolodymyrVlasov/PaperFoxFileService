@@ -39,16 +39,17 @@ public class FileUploadService implements IFileUploadService {
 
     @Override
     public Resource getPreview(String fileName) throws MalformedURLException {
-            File root = new File(temporaryPath);
-            String[] dirList = root.list();
-            for (String dir : dirList) {
-                File preview = new File(temporaryPath + dir + "/" + fileName);
-                if (preview.exists()) {
-                    System.out.println("file is exist");
-                    Path filePath = Paths.get(preview.getPath());
-                    return new UrlResource(filePath.toUri());
-                }
+        String dirName = fileName.split("_")[0];
+        File root = new File(temporaryPath);
+        String[] dirList = root.list();
+        for (String dir : dirList) {
+            File preview = new File(temporaryPath + "/" + dir + "/" + fileName);
+            if (preview.exists()) {
+                System.out.println("file is exist");
+                Path filePath = Paths.get(preview.getPath());
+                return new UrlResource(filePath.toUri());
             }
+        }
 
 
 //            Path filePath = Paths.get(temporaryPath);

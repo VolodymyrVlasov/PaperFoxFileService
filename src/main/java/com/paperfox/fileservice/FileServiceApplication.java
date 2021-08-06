@@ -10,7 +10,7 @@ public class FileServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(FileServiceApplication.class, args);
 
-        FileUploadService fileUploadService = new FileUploadService();
+//        FileUploadService fileUploadService = new FileUploadService();
     }
 }
 
