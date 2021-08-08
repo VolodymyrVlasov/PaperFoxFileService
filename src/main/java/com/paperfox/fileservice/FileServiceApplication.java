@@ -1,6 +1,5 @@
 package com.paperfox.fileservice;
 
-import com.paperfox.fileservice.services.FileUploadService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

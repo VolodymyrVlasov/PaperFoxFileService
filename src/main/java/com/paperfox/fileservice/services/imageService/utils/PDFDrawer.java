@@ -11,6 +11,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.rendering.PDFRenderer;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.geom.AffineTransform;
@@ -31,7 +32,7 @@ public class PDFDrawer {
         PDImageXObject image = PDImageXObject.createFromFileByContent(rasterImage, pdf);
         stream.drawImage(image, 0, 0, (float) (printingSize.getWidth() * c), (float) (printingSize.getHeight() * c));
         stream.close();
-        File convertedFile = new File("/" + destinationFolder.toString() + rasterImage.getName() + ".pdf");
+        File convertedFile = new File("/" + destinationFolder.toString() + "/printing_layer.pdf");
         pdf.save(convertedFile);
         pdf.close();
         return convertedFile;
@@ -68,7 +69,7 @@ public class PDFDrawer {
         double ty = (pdf1Frame.getHeight() - pdf2Frame.getHeight()) * 0.5;
         AffineTransform afRight = AffineTransform.getTranslateInstance(tx, ty);
         layerUtility.appendFormAsLayer(outPdfPage, formPdf2, afRight, "cut");
-        File resultPdf = new File(destinationFolder.toString() + "/full_" + UUID.randomUUID().toString().split("-")[0] + ".pdf");
+        File resultPdf = new File(destinationFolder.toString() + "/printing_file.pdf");
         outPdf.save(resultPdf);
         pdf1.close();
         pdf2.close();
@@ -76,10 +77,16 @@ public class PDFDrawer {
         return resultPdf;
     }
 
-    public static File renderPDF(File pdf) throws IOException {
-        PDDocument pdfFile = PDDocument.load(pdf);
-        BufferedImage image = new PDFRenderer(pdfFile).renderImageWithDPI(0, 300);
-        File previewFile = new File(pdf.getParentFile() + "/preview_" + pdf.getName() + ".png");
+    public static File renderPDF(Object pdf, File productDirectory) throws IOException {
+        PDDocument pdfFile;
+        System.out.println("file instance: " + (pdf.getClass()));
+        if (pdf instanceof File) {
+            pdfFile = PDDocument.load((File) pdf);
+        } else {
+            pdfFile = PDDocument.load(((MultipartFile) pdf).getInputStream());
+        }
+        BufferedImage image = new PDFRenderer(pdfFile).renderImageWithDPI(0, 350);
+        File previewFile = new File(productDirectory + "/renderedPDF.png");
         ImageIO.write(image, "png", previewFile);
         pdfFile.close();
         return previewFile;

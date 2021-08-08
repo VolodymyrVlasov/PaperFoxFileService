@@ -22,6 +22,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.UUID;
@@ -30,38 +31,49 @@ import java.util.UUID;
 public abstract class ImageServiceUtils {
     public final double DPI = 300.0d;
     private final double MAX_SIZE = 500;
-    private final String RESIZE_PREFIX_NAME = "thumb_";
+    private final String RESIZE_PREFIX_NAME = "preview";
 
     public Size getPrintingSize(Size size, double bleed) {
         Size printingSize = new Size();
-        printingSize.setWidth(size.getWidth() + bleed);
-        printingSize.setHeight(size.getHeight() + bleed);
-        printingSize.setBorderRadius(size.getBorderRadius());
+        if (size.getDiameter() > 0) {
+            printingSize.setDiameter(size.getDiameter() + bleed);
+            printingSize.setWidth(size.getDiameter() + bleed);
+            printingSize.setHeight(size.getDiameter() + bleed);
+        } else {
+            printingSize.setWidth(size.getWidth() + bleed);
+            printingSize.setHeight(size.getHeight() + bleed);
+            printingSize.setBorderRadius(size.getBorderRadius());
+        }
         return printingSize;
     }
 
     public File convertSVGtoPDF(String svg, File destinationFolder) throws IOException, TranscoderException {
-        File pdfFile = new File(destinationFolder.toString() + "/cut_" + UUID.randomUUID().toString().split("-")[0] + ".pdf");
+        File pdfFile = new File(destinationFolder.toString() + "/cutting_layer.pdf");
         SVGConverterUtils converter = new SVGConverterUtils();
         converter.svg2PDF(svg, converter.getOutputStream(pdfFile));
         return pdfFile;
     }
 
-    public File createPreview(File originalFile) throws IOException {
-        BufferedImage previewImage = ImageIO.read(originalFile);
+    public File createPreview(Object originalFile, File productFolder, String token) throws IOException {
+        System.out.println("createPreview -> token -> " + token);
+        BufferedImage previewImage;
+        if (originalFile instanceof File) {
+            previewImage = ImageIO.read((File) originalFile);
+        } else {
+            previewImage = (BufferedImage) originalFile;
+        }
         BufferedImage outputImage;
         double width = previewImage.getWidth();
         double height = previewImage.getHeight();
+        File file = new File(productFolder + "/" + UUID.randomUUID().toString().split("-")[0] + "_preview.png");
 
         if (width >= height) {
             double coefficient = width / height;
             int targetHeight = (int) Math.round(MAX_SIZE / coefficient);
             Image resultingImage = previewImage.getScaledInstance((int) MAX_SIZE, targetHeight, Image.SCALE_SMOOTH);
             outputImage = new BufferedImage(
-                    (int) MAX_SIZE, (int) Math.round(MAX_SIZE / coefficient), BufferedImage.TYPE_INT_RGB);
+                    (int) MAX_SIZE, (int) Math.round(MAX_SIZE / coefficient), BufferedImage.TYPE_INT_ARGB);
             outputImage.getGraphics().drawImage(resultingImage, 0, 0, null);
-            File file = new File(originalFile.getParent() + "/" + RESIZE_PREFIX_NAME + originalFile.getName().split("\\.")[0] + ".png");
-            originalFile.delete();
             ImageIO.write(outputImage, "png", file);
             return file;
         } else {
@@ -69,9 +81,8 @@ public abstract class ImageServiceUtils {
             int targetWidth = (int) Math.round(MAX_SIZE / coefficient);
             Image resultingImage = previewImage.getScaledInstance(targetWidth, (int) MAX_SIZE, Image.SCALE_SMOOTH);
             outputImage = new BufferedImage(
-                    targetWidth, (int) MAX_SIZE, BufferedImage.TYPE_INT_RGB);
+                    targetWidth, (int) MAX_SIZE, BufferedImage.TYPE_INT_ARGB);
             outputImage.getGraphics().drawImage(resultingImage, 0, 0, null);
-            File file = new File(originalFile.getAbsolutePath() + RESIZE_PREFIX_NAME + originalFile.getName() + ".jpg");
             ImageIO.write(outputImage, "png", file);
             return file;
         }
@@ -79,8 +90,7 @@ public abstract class ImageServiceUtils {
 
     private PDRectangle getMediaBox(Size size, int bleedMM) {
         float c = 2.834645857142857f;
-        PDRectangle mediaBox = new PDRectangle((float) ((size.getWidth() + bleedMM * 2) * c), (float) ((size.getHeight() + bleedMM * 2) * c));
-        return mediaBox;
+        return new PDRectangle((float) ((size.getWidth() + bleedMM * 2) * c), (float) ((size.getHeight() + bleedMM * 2) * c));
     }
 
 
@@ -91,9 +101,6 @@ public abstract class ImageServiceUtils {
         Image image = originalImage.getScaledInstance(widthPx, heightPx, Image.SCALE_SMOOTH);
         BufferedImage scaledImage = new BufferedImage(widthPx, heightPx, Image.SCALE_SMOOTH);
         scaledImage.getGraphics().drawImage(image, 0, 0, null);
-//        String[] temp = file.getName().split(".");
-//        String fileType = temp[temp.length - 1];
-//        scaledImage = setDpi(scaledImage, fileType);
         return scaledImage;
     }
 
@@ -128,7 +135,6 @@ public abstract class ImageServiceUtils {
                 }
             }
         }
-
         return resultImage;
     }
 
@@ -202,7 +208,7 @@ public abstract class ImageServiceUtils {
             for (Iterator<ImageWriter> iw = ImageIO.getImageWritersByFormatName(formatName); iw.hasNext(); ) {
                 ImageWriter writer = iw.next();
                 ImageWriteParam writeParam = writer.getDefaultWriteParam();
-                ImageTypeSpecifier typeSpecifier = ImageTypeSpecifier.createFromBufferedImageType(BufferedImage.TYPE_INT_RGB);
+                ImageTypeSpecifier typeSpecifier = ImageTypeSpecifier.createFromBufferedImageType(BufferedImage.TYPE_INT_ARGB);
                 IIOMetadata metadata = writer.getDefaultImageMetadata(typeSpecifier, writeParam);
                 if (metadata.isReadOnly() || !metadata.isStandardMetadataFormatSupported()) {
                     continue;
