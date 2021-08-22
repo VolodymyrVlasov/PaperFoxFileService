@@ -104,7 +104,7 @@ public abstract class ImageServiceUtils {
         return scaledImage;
     }
 
-    public BufferedImage getCutMaskImage(BufferedImage originalImage, int offsetPixels) {
+    public static BufferedImage getCutMaskImage(BufferedImage originalImage, int offsetPixels) {
         // todo: optimize method
         // todo: implement scaleCanvas() from FileServiceApplication
         BufferedImage resultImage = new BufferedImage(

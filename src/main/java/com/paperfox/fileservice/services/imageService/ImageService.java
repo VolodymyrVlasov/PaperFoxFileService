@@ -35,30 +35,7 @@ public class ImageService extends ImageServiceUtils {
     private final double BLEED = 2;
     private static final Logger logger = LoggerFactory.getLogger(FileUploadController.class);
 
-
-    public String createWorkingFilesByProductType(Options options) throws Exception {
-        if (options.productType == ProductType.FIGURE) {
-            this.createFiguredStickerFiles(options.file);
-        } else if (options.productType == ProductType.ROUND) {
-            return this.createRoundStickerFiles(options);
-        } else if (options.productType == ProductType.SQUARED) {
-            return this.createSquaredStickerFiles(options);
-        } else if (options.productType == ProductType.STICKER_SET) {
-            this.createStickerSetFiles(options.file);
-        }
-        throw new Exception("unExisted ProductType exception " + options.productType);
-    }
-
-    // todo: make method return type model of file path which include: name of temp directory, name of original file, name of printing file, name of preview file
-    private String createSquaredStickerFiles(Options options) throws Exception {
-        // create temp product folder (name: short uuid + time stamp)
-        // save in temp directory original file
-        // create printing size
-        // scale original image to printingSize and set 450 dpi -> if pdf render it to png   @File
-        // create pdf file with cut contour using size @File
-        // create pdf with two layers using cut contour(File) and printing image(File)  @File
-        // create preview for frontend using complete pdf file(File) @String (filename)
-        // delete files, leave only directory with: original file, file for print and preview file
+    public String createFiles(Options options) throws Exception {
         File productFolder = new File(temporaryPath + "/" + options.token);
         if (this.checkFolder(productFolder)) {
             Files.copy(options.file.getInputStream(), Paths.get(productFolder + "/original_" + options.file.getOriginalFilename()),
@@ -67,7 +44,21 @@ public class ImageService extends ImageServiceUtils {
             File scaledToPrintSizeRaster = PNGDrawer.scalePNGImage(options.file, printingSize, productFolder);
             File previewImage = createPreview(scaledToPrintSizeRaster, productFolder, options.token);
             File printingLayerPDF = PDFDrawer.convertToPDF(scaledToPrintSizeRaster, printingSize, productFolder);
-            File cuttingLayerPDF = convertSVGtoPDF(SVGDrawer.getRectContour(options.size), productFolder);
+            String svg;
+            if (options.productType == ProductType.FIGURE) {
+                svg = SVGDrawer.getFiguredContour(options, productFolder);
+            } else if (options.productType == ProductType.ROUND) {
+                svg = SVGDrawer.getCircleContour(options.size);
+                System.out.println(svg);
+            } else if (options.productType == ProductType.SQUARED) {
+                svg = SVGDrawer.getRectContour(options.size);
+            } else if (options.productType == ProductType.STICKER_SET) {
+                svg = "";
+            } else {
+                throw new Exception("unExisted ProductType exception " + options.productType);
+            }
+            System.out.println();
+            File cuttingLayerPDF = convertSVGtoPDF(svg, productFolder);
             File composedPDF = PDFDrawer.generatePrintingPDF(printingLayerPDF, cuttingLayerPDF, productFolder);
             scaledToPrintSizeRaster.delete();
             printingLayerPDF.delete();
@@ -76,32 +67,6 @@ public class ImageService extends ImageServiceUtils {
         } else {
             return createPreview(ImageIO.read(options.file.getInputStream()), productFolder, options.token).getName();
         }
-    }
-
-    private void createFiguredStickerFiles(MultipartFile originalFile) {
-    }
-
-    private String createRoundStickerFiles(Options options) throws IOException, TranscoderException {
-        File productFolder = new File(temporaryPath + "/" + options.token);
-        if (this.checkFolder(productFolder)) {
-            Files.copy(options.file.getInputStream(), Paths.get(productFolder + "/" + options.file.getOriginalFilename()),
-                    StandardCopyOption.REPLACE_EXISTING);
-            Size printingSize = getPrintingSize(options.size, BLEED);
-            File scaledToPrintSizeRaster = PNGDrawer.scalePNGImage(options.file, printingSize, productFolder);
-            File previewImage = createPreview(scaledToPrintSizeRaster, productFolder, options.token);
-            File printingLayerPDF = PDFDrawer.convertToPDF(scaledToPrintSizeRaster, printingSize, productFolder);
-            File cuttingLayerPDF = convertSVGtoPDF(SVGDrawer.getCircleContour(options.size), productFolder);
-            File composedPDF = PDFDrawer.generatePrintingPDF(printingLayerPDF, cuttingLayerPDF, productFolder);
-            scaledToPrintSizeRaster.delete();
-            printingLayerPDF.delete();
-            cuttingLayerPDF.delete();
-            return previewImage.getName();
-        } else {
-            return createPreview(ImageIO.read(options.file.getInputStream()), productFolder, options.token).getName();
-        }
-    }
-
-    private void createStickerSetFiles(MultipartFile originalFile) {
     }
 
     private boolean checkFolder(File productFolder) {

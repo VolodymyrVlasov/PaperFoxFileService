@@ -41,7 +41,7 @@ public class FileUploadController {
             options.token = token;
             options.productType = type;
             options.size = size;
-            String filePath = imageService.createWorkingFilesByProductType(options);
+            String filePath = imageService.createFiles(options);
             formData.add("filePath", filePath);
         } catch (Exception e) {
             e.printStackTrace();

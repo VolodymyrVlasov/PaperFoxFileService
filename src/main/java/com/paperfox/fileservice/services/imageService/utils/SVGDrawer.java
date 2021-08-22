@@ -1,9 +1,14 @@
 package com.paperfox.fileservice.services.imageService.utils;
 
+import com.paperfox.fileservice.models.Options;
 import com.paperfox.fileservice.models.Size;
+import com.paperfox.fileservice.services.imageService.ImageServiceUtils;
 import jankovicsandras.imagetracer.ImageTracer;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 
 public class SVGDrawer {
@@ -30,28 +35,34 @@ public class SVGDrawer {
                 "stroke-dasharray=\"10 5\"/></svg>";
     }
 
-    public static String getFiguredContour() {
-        return "";
+    public static String getFiguredContour(Options options,File productFolder) throws Exception {
+        BufferedImage rasterCutMask = ImageServiceUtils.getCutMaskImage(
+                ImageIO.read(options.file.getInputStream()), 28);
+        File outputfile = new File(productFolder.getAbsolutePath() + "/rasterCutMask.png");
+        ImageIO.write(rasterCutMask, "png", outputfile);
+        return getCutContour(rasterCutMask);
     }
 
-    private String getCutContour(BufferedImage cutMaskImage) throws Exception {
-        return ImageTracer.imageToSVG(cutMaskImage, getTraceOption(), null); // getPalette()
+    private static String getCutContour(BufferedImage cutMaskImage) throws Exception {
+        String vector = ImageTracer.imageToSVG(cutMaskImage, getTraceOption(), null);
+        ImageTracer.saveString("/Users/admin/desktop/fileService/vector.svg", vector);
+        return vector; // getPalette()
     }
 
-    private HashMap<String, Float> getTraceOption() {
+    private static HashMap<String, Float> getTraceOption() {
         HashMap<String, Float> options = new HashMap<>();
 //      Tracing
-        options.put("ltres", 100f);
-        options.put("qtres", 100f);
+        options.put("ltres", 5f);
+        options.put("qtres", 5f);
         options.put("pathomit", 100f);
 //      Color quantization
         options.put("colorsampling", 1f); // 1f means true ; 0f means false: starting with generated palette
         options.put("numberofcolors", 2f);
 //      options.put("mincolorratio", 0.02f);
-//      options.put("colorquantcycles", 255f);
+      options.put("colorquantcycles", 255f);
 //      SVG rendering
         options.put("scale", 1f);
-//      options.put("roundcoords", 10f); // 1f means rounded to 1 decimal places, like 7.3 ; 3f means rounded to 3 places, like 7.356 ; etc.
+      options.put("roundcoords", 10f); // 1f means rounded to 1 decimal places, like 7.3 ; 3f means rounded to 3 places, like 7.356 ; etc.
         options.put("lcpr", 0f);
 //      options.put("qcpr", 0f);
 //      options.put("desc", 1f); // 1f means true ; 0f means false: SVG descriptions deactivated
